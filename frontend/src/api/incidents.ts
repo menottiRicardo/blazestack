@@ -105,4 +105,11 @@ export const incidentsApi = {
   get: async (id: string): Promise<Incident> => {
     return apiRequest<Incident>(`/incidents/${id}`);
   },
+
+  // Delete an incident by ID
+  delete: async (id: string): Promise<{ message: string }> => {
+    return apiRequest<{ message: string }>(`/incidents/${id}`, {
+      method: "DELETE",
+    });
+  },
 };

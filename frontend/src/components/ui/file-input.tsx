@@ -75,11 +75,11 @@ export function FileInput({
   return (
     <div className={cn('space-y-2', className)}>
       {previewUrl && preview ? (
-        <div className="w-64 h-64 relative mx-auto">
+        <div className="w-48 h-48 relative mx-auto">
           <img
             src={previewUrl}
             alt="Preview"
-            className="w-64 h-64 rounded-lg object-cover"
+            className="w-48 h-48 rounded-lg object-cover"
           />
           <button
             className="absolute top-2 right-2"
@@ -92,7 +92,7 @@ export function FileInput({
           </button>
         </div>
       ) : (
-        <Input id="image" type="file" onChange={handleInputChange} />
+        <Input id="image" type="file" accept="image/*" onChange={handleInputChange} />
       )}
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
