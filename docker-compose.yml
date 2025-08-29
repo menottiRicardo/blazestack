@@ -7,11 +7,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "3000:3000"
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:8080
+      - VITE_API_URL=http://localhost:8000
     networks:
       - blazestack-network
 
@@ -21,31 +21,29 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8000:8000"
     depends_on:
-      - database
+      - mongodb
     environment:
       - NODE_ENV=production
-      - PORT=8080
-      - DATABASE_URL=file:/app/data/database.sqlite
-    volumes:
-      - sqlite-data:/app/data
+      - PORT=8000
+      - MONGODB_URI=mongodb://mongodb:27017/blazestack
     networks:
       - blazestack-network
 
-  # SQLite doesn't need a separate container, but we'll use a lightweight
-  # container to manage the database file and provide easy access
-  database:
-    image: alpine:latest
-    command: ["tail", "-f", "/dev/null"]  # Keep container running
+  # MongoDB service
+  mongodb:
+    image: mongo:7
+    ports:
+      - "27017:27017"
     volumes:
-      - sqlite-data:/data
+      - mongodb-data:/data/db
     networks:
       - blazestack-network
 
 # Named volumes for persistent data
 volumes:
-  sqlite-data:
+  mongodb-data:
     driver: local
 
 # Networks

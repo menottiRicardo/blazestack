@@ -11,7 +11,7 @@
   "keywords": [],
   "main": "src/index.ts",
   "scripts": {
-    "start": "node --env-file=.env dist/src/index.js",
+    "start": "node dist/src/index.js",
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
     "lint": "eslint --fix src test",
@@ -22,6 +22,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
+    "mongodb": "^6.5.0",
     "morgan": "^1.10.0",
     "zod": "^3.25.67"
   },
