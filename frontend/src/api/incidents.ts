@@ -18,10 +18,14 @@ async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  console.log(url);
+  
+  // Check if body is FormData, if so don't set Content-Type header
+  const isFormData = options.body instanceof FormData;
   
   const config: RequestInit = {
-    headers: {
+    headers: isFormData ? {
+      ...options.headers,
+    } : {
       "Content-Type": "application/json",
       ...options.headers,
     },
@@ -56,11 +60,38 @@ async function apiRequest<T>(
 
 export const incidentsApi = {
   // Create a new incident
-  create: async (data: CreateIncidentRequest): Promise<Incident> => {
-    return apiRequest<Incident>("/incidents", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+  create: async (data: CreateIncidentRequest & { file?: File }): Promise<Incident> => {
+    if (data.file) {
+      // Handle file upload with FormData
+      const formData = new FormData();
+      
+      // Add form fields
+      formData.append('title', data.title);
+      formData.append('incident_type', data.incident_type);
+      
+      if (data.description) {
+        formData.append('description', data.description);
+      }
+      if (data.location) {
+        formData.append('location', data.location);
+      }
+      
+      // Add the file
+      formData.append('image', data.file);
+      
+      return apiRequest<Incident>("/incidents", {
+        method: "POST",
+        headers: {}, // Don't set Content-Type, let browser set it for FormData
+        body: formData,
+      });
+    } else {
+      // Regular JSON request without file
+      const { file, ...requestData } = data;
+      return apiRequest<Incident>("/incidents", {
+        method: "POST",
+        body: JSON.stringify(requestData),
+      });
+    }
   },
 
   // Get incidents list with pagination

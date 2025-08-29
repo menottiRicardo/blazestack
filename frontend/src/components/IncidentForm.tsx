@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import type { ApiError } from "@/api/incidents";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { FileInput } from "@/components/ui/file-input";
 import {
   Select,
   SelectContent,
@@ -36,6 +38,7 @@ interface IncidentFormProps {
 
 export function IncidentForm({ onSuccess, onCancel }: IncidentFormProps) {
   const queryClient = useQueryClient();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const form = useForm<CreateIncidentFormData>({
     resolver: zodResolver(createIncidentSchema),
@@ -56,6 +59,7 @@ export function IncidentForm({ onSuccess, onCancel }: IncidentFormProps) {
       
       toast.success("Incident created successfully!");
       form.reset();
+      setSelectedFile(null);
       onSuccess?.();
     },
     onError: (error: ApiError) => {
@@ -76,10 +80,15 @@ export function IncidentForm({ onSuccess, onCancel }: IncidentFormProps) {
       ...data,
       description: data.description?.trim() || undefined,
       location: data.location?.trim() || undefined,
-      image: data.image?.trim() || undefined,
+      image: selectedFile ? selectedFile.name : undefined, // Store filename for now
     };
     
-    createIncidentMutation.mutate(cleanedData);
+    // For now, we'll pass the file separately
+    // In a real implementation, you'd create FormData and include the file
+    createIncidentMutation.mutate({
+      ...cleanedData,
+      file: selectedFile, // Pass the file object
+    } as any);
   };
 
   const isLoading = createIncidentMutation.isPending;
@@ -171,23 +180,18 @@ export function IncidentForm({ onSuccess, onCancel }: IncidentFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="image"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Image URL or file path (optional)"
-                  disabled={isLoading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Image</FormLabel>
+          <FormControl>
+            <FileInput
+              onFileSelect={setSelectedFile}
+              currentFile={selectedFile}
+              disabled={isLoading}
+              placeholder="Upload an incident image (optional)"
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
 
         <div className="flex justify-end space-x-3 pt-4">
           {onCancel && (
