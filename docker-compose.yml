@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    networks:
+      - blazestack-network
+
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - DATABASE_URL=file:/app/data/database.sqlite
+    volumes:
+      - sqlite-data:/app/data
+    networks:
+      - blazestack-network
+
+  # SQLite doesn't need a separate container, but we'll use a lightweight
+  # container to manage the database file and provide easy access
+  database:
+    image: alpine:latest
+    command: ["tail", "-f", "/dev/null"]  # Keep container running
+    volumes:
+      - sqlite-data:/data
+    networks:
+      - blazestack-network
+
+# Named volumes for persistent data
+volumes:
+  sqlite-data:
+    driver: local
+
+# Networks
+networks:
+  blazestack-network:
+    driver: bridge
